@@ -6201,7 +6201,11 @@ function renderViaje(){
   loadPhotos();
 }
 let tab = "hoje";
-function renderAll(){ renderBoard(); renderHoje(); renderPlano(); renderTreino(); if(tab==="frases") renderPhraseList(); checkBadges(); loadPhotos(); }
+/* O app fica aberto em segundo plano por dias no iPhone: ao voltar num dia novo, a tela Hoy é refeita (frase do dia, passos, conversa do dia). */
+let RENDER_DAY = "";
+function refreshIfNewDay(){ if(document.visibilityState!=="visible") return; if(RENDER_DAY && RENDER_DAY!==todayKey() && !D && $("#sheet").hidden){ renderAll(); toast("Novo dia: rotina atualizada."); } }
+document.addEventListener("visibilitychange", refreshIfNewDay); window.addEventListener("pageshow", refreshIfNewDay); window.addEventListener("focus", refreshIfNewDay);
+function renderAll(){ RENDER_DAY=todayKey(); renderBoard(); renderHoje(); renderPlano(); renderTreino(); if(tab==="frases") renderPhraseList(); checkBadges(); loadPhotos(); }
 function showTab(t){
   hideDict(); tab = t;
   ["hoje","plano","treino","frases","viaje"].forEach(k=>{ $("#v-"+k).hidden = k!==t; });
@@ -7702,7 +7706,7 @@ setTimeout(()=>{ if(!PR.onboarded && $("#sheet").hidden) openOnboarding(); }, 40
   } else toast("Esse link de backup não é válido."); return; }
   const d=parseInvite(location.hash); if(d && receiveScore(d)){ try{ history.replaceState(null,"",location.pathname+location.search); }catch(e){} renderAll(); setTimeout(()=>{ toast(`Placar de ${d.name} recebido. Agora mande o seu!`); if(PR.onboarded) openPasajeros(); }, 600); } })();
 /* Atualização automática: quando sai versão nova, o app baixa e recarrega sozinho (fora de um treino). */
-const APP_VERSION = "2026.10.28-2256";
+const APP_VERSION = "2026.10.28-2257";
 let pendingReload = false;
 function maybeReload(){ if(!pendingReload) return; if(D || !$("#drill").hidden){ return; } pendingReload=false; toast("Atualizando o app…"); setTimeout(()=>location.reload(), 600); }
 if("serviceWorker" in navigator && !window.claude && location.protocol==="https:"){
